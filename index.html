@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Дашборд ПЗ 24</title>
+<style>
+:root{--bg:#f5f6fa;--surf:#fff;--p:#2c3e50;--s:#16a085;--txt:#2f3640;--b:#ddd;--err:#e74c3c}
+body.dark{--bg:#1e272e;--surf:#2f3640;--p:#718093;--s:#1abc9c;--txt:#f5f6fa;--b:#485460}
+body{font-family:sans-serif;background:var(--bg);color:var(--txt);padding:20px;margin:0}
+.wrap{max-width:1100px;margin:0 auto}
+header{background:var(--p);color:#fff;padding:15px 20px;border-radius:8px;display:flex;justify-content:space-between;align-items:center}
+button{background:var(--s);color:#fff;border:none;padding:10px 18px;border-radius:6px;cursor:pointer;font-weight:bold}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:15px;margin:20px 0}
+.card{background:var(--surf);padding:15px;border-radius:8px;border-top:4px solid var(--s)}
+.card.bad{border-top-color:var(--err)}
+input{width:100%;padding:8px;margin:5px 0 10px;border:1px solid var(--b);background:var(--bg);color:var(--txt);box-sizing:border-box}
+.msg{color:var(--err);font-size:12px;display:none;margin-top:-8px;margin-bottom:8px}
+.res{background:var(--b);padding:10px;border-radius:4px;border-left:4px solid var(--s)}
+.bar-bg{background:#ccc;height:10px;border-radius:4px;margin:6px 0;overflow:hidden}
+.bar{background:var(--s);height:100%;width:50%;transition:0.3s}
+.pto{background:var(--surf);padding:15px;border-radius:8px;border:1px solid var(--b)}
+.send{width:100%;padding:12px;font-size:16px;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<h2>Инженерный дашборд дорожного строительства</h2>
+<button id="tbtn" onclick="setTheme()">🌙 Ночной режим</button>
+</header>
+
+<div class="grid">
+<div id="c1" class="card">
+<h3>Модуль 1: Доставка асфальта</h3>
+<label>Площадь S (м²):</label><input type="number" id="s1" value="1000" oninput="calc()">
+<div id="e1" class="msg">Введите число больше 0</div>
+<label>Толщина h (м):</label><input type="number" id="h1" value="0.05" step="0.01" oninput="calc()">
+<label>Плотность p (т/м³):</label><input type="number" id="p1" value="2.4" step="0.1" oninput="calc()">
+<label>Грузоподъёмность G (т):</label><input type="number" id="g1" value="20" oninput="calc()">
+<div class="res">
+<div>Масса M = <b id="m1">120.0</b> т</div>
+<div class="bar-bg"><div id="b1" class="bar"></div></div>
+<div>Рейсы N = <b id="n1">6</b> шт</div>
+</div>
+</div>
+
+<div id="c2" class="card">
+<h3>Модуль 2: Осевые нагрузки</h3>
+<label>Площадь S (м²):</label><input type="number" id="s2" value="500" oninput="calc()">
+<div id="e2" class="msg">Введите число больше 0</div>
+<label>Толщина h (м):</label><input type="number" id="h2" value="0.08" step="0.01" oninput="calc()">
+<label>Плотность p (т/м³):</label><input type="number" id="p2" value="2.3" step="0.1" oninput="calc()">
+<label>Нагрузка G (т):</label><input type="number" id="g2" value="8" oninput="calc()">
+<div class="res">
+<div>Масса M = <b id="m2">92.0</b> т</div>
+<div class="bar-bg"><div id="b2" class="bar"></div></div>
+<div>Оси N = <b id="n2">11.5</b> ед</div>
+</div>
+</div>
+
+<div id="c3" class="card">
+<h3>Модуль 3: Логистика рейса</h3>
+<label>Площадь S (м²):</label><input type="number" id="s3" value="2000" oninput="calc()">
+<div id="e3" class="msg">Введите число больше 0</div>
+<label>Толщина h (м):</label><input type="number" id="h3" value="0.06" step="0.01" oninput="calc()">
+<label>Плотность p (т/м³):</label><input type="number" id="p3" value="2.4" step="0.1" oninput="calc()">
+<label>Вместимость G (т):</label><input type="number" id="g3" value="25" oninput="calc()">
+<div class="res">
+<div>Масса M = <b id="m3">288.0</b> т</div>
+<div class="bar-bg"><div id="b3" class="bar"></div></div>
+<div>Рейсы N = <b id="n3">11.52</b> шт</div>
+</div>
+</div>
+</div>
+
+<div class="pto">
+<h3>Синхронизация с базой данных ПТО</h3>
+<label>Наименование объекта:</label>
+<input type="text" id="obj" value="Автодорога М-4 «Дон», км 150">
+<button class="send" onclick="sendData()">🚀 Рассчитать и отправить в Google Таблицы</button>
+</div>
+</div>
+
+<script>
+var URL_SCRIPT = "https://google.com";
+
+function setTheme() {
+    document.body.classList.toggle("dark");
+    var d = document.body.classList.contains("dark");
+    document.getElementById("tbtn").innerText = d ? "☀️ Дневной режим" : "🌙 Ночной режим";
+}
+
+function getVal(id) {
+    return parseFloat(document.getElementById(id).value);
+}
+
+function calcOne(idx, roundUp) {
+    var s = getVal("s" + idx), h = getVal("h" + idx), p = getVal("p" + idx), g = getVal("g" + idx);
+    var card = document.getElementById("c" + idx), err = document.getElementById("e" + idx), bar = document.getElementById("b" + idx);
+
+    if (isNaN(s) || s <= 0 || isNaN(h) || h <= 0 || isNaN(p) || p <= 0 || isNaN(g) || g <= 0) {
+        card.classList.add("bad"); err.style.display = "block";
+        document.getElementById("m" + idx).innerText = "Ошибка"; document.getElementById("n" + idx).innerText = "—";
+        bar.style.width = "0%"; return "Ошибка";
+    }
+
+    card.classList.remove("bad"); err.style.display = "none";
+    var m = s * h * p, n = roundUp ? Math.ceil(m / g) : (m / g);
+    var nStr = roundUp ? n.toString() : n.toFixed(1);
+
+    document.getElementById("m" + idx).innerText = m.toFixed(1); document.getElementById("n" + idx).innerText = nStr;
+    bar.style.width = Math.min((m / 500) * 100, 100) + "%";
+    return "M=" + m.toFixed(1) + "т, N=" + nStr;
+}
+
+function calc() {
+    return "М1(" + calcOne(1, true) + ") | М2(" + calcOne(2, false) + ") | М3(" + calcOne(3, false) + ")";
+}
+
+function sendData() {
+    var resText = calc();
+    var formData = new URLSearchParams();
+    formData.append("objectName", document.getElementById("obj").value || "Объект");
+    formData.append("result", resText);
+    formData.append("inputData", "S1=" + getVal("s1") + ", S2=" + getVal("s2") + ", S3=" + getVal("s3"));
+    formData.append("moduleName", "Модули 1, 2, 3");
+
+    fetch(URL_SCRIPT, {
+        method: "POST",
+        mode: "no-cors",
+        body: formData
+    }).then(function() {
+        alert("Данные успешно улетели в Google Таблицу!");
+    }).catch(function(e) {
+        alert("Ошибка: " + e);
+    });
+}
+
+window.onload = calc;
+</script>
+</body>
+</html>
